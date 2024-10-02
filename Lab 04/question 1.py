@@ -11,7 +11,6 @@ def n_sig_figs(n):
         pi_approx += formula(m)
         m += 1
     return m
-        
 
 if __name__ == '__main__':
     # question 1

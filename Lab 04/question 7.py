@@ -34,7 +34,7 @@ def all_days(y1, m1, d1, y2, m2 ,d2):
     y,m,d = next_day(y,m,d)
     num_days +=1
     while (y<yy) or (y==yy and m<mm) or (y==yy and m==mm and d < dd):
-        print(f'{y}/{m}/{d}')
+        #print(f'{y}/{m}/{d}')
         y,m,d = next_day(y,m,d)
         num_days +=1
     return num_days

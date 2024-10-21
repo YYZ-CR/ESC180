@@ -219,7 +219,7 @@ pi_digit = 0
 def next_digit_pi():
     global pi_digit
     pi_digit += 1
-    return str(math.pi).replace('.','')[pi_digit]
+    return str(math.pi).replace('.','')[pi_digit-1]
 
 if __name__ == "__main__":
     # Add any code to test your functions here

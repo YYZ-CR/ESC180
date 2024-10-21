@@ -98,7 +98,7 @@ def first_half(str):
     first_half('HelloThere') â†’ 'Hello'
     first_half('abcdef') â†’ 'abc'
     """
-    return str[0:len(str)/2]
+    return str[0:len(str)//2]
 
 def without_end(str):
     """
@@ -177,7 +177,7 @@ def end_other(a, b):
     end_other('AbC', 'HiaBc') â†’ True
     end_other('abc', 'abXabc') â†’ True
     """
-    return a.lower().ends_with(b.lower()) or b.lower().ends_with(a.lower())
+    return a.lower().endswith(b.lower()) or b.lower().endswith(a.lower())
 
 def centered_average(nums):
     """
@@ -219,7 +219,7 @@ pi_digit = 0
 def next_digit_pi():
     global pi_digit
     pi_digit += 1
-    return math.pi[pi_digit]
+    return str(math.pi)[pi_digit]
 
 if __name__ == "__main__":
     # Add any code to test your functions here

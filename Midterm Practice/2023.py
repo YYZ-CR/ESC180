@@ -113,10 +113,9 @@ def main():
     check_next_prime(3)
     check_next_prime(4)
     check_next_prime(5)
-    m = [[1,2,4],[2,5,9],[4,3,3]]
+    m = [[1,2,3],[2,5,4],[4,3,9]]
     print(is_almost_symmetric(m))
     print()
-    bonus()
 
 if __name__ == '__main__':
     main()

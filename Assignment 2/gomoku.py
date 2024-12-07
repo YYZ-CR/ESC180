@@ -1,45 +1,149 @@
-"""Gomoku starter code
-You should complete every incomplete function,
-and add more functions and variables as needed.
-
-Note that incomplete functions have 'pass' as the first statement:
-pass is a Python keyword; it is a statement that does nothing.
-This is a placeholder that you should remove once you modify the function.
-
-Author(s): Michael Guerzhoy with tests contributed by Siavash Kazemian.  Last modified: Nov. 1, 2023
-"""
-
 def is_empty(board):
-    for i in board:
-        if i != '':
-            return False
+    for row in board:
+        for col in row:
+            if col != " ":
+                return False
     return True
     
     
 def is_bounded(board, y_end, x_end, length, d_y, d_x):
-    y = y_end
-    x = x_end
-    if d_y == 0 and d_x == 1: #left-to-right
-        for i in range(length):
+    max_y = len(board) - 1
+    max_x = len(board[0]) - 1
 
+    # Helper function to check if a position is within bounds
+    def is_within_bounds(y, x):
+        return 0 <= y <= max_y and 0 <= x <= max_x
 
-    if d_y == 1 and d_x == 0: # top to bottom
+    #vertically
+    if (d_y, d_x) == (1, 0):
+        above = is_within_bounds(y_end + 1, x_end) and board[y_end + 1][x_end] == " "
+        below = is_within_bounds(y_end - length, x_end) and board[y_end - length][x_end] == " "
+        if above and below:
+            return "OPEN"
+        elif above or below:
+            return "SEMIOPEN"
+        else:
+            return "CLOSED"
 
-    if d_y == 1 and d_x == 1: # upper-left to bottom-right
+    #sideways
+    if (d_y, d_x) == (0, 1):
+        right = is_within_bounds(y_end, x_end + 1) and board[y_end][x_end + 1] == " "
+        left = is_within_bounds(y_end, x_end - length) and board[y_end][x_end - length] == " "
+        if right and left:
+            return "OPEN"
+        elif right or left:
+            return "SEMIOPEN"
+        else:
+            return "CLOSED"
 
-    if d_y == 1 and d_x == -1: # upper-right to bottom-left
+    #rl diagonal /
+    elif (d_y, d_x) == (1, -1):
+        top_right = is_within_bounds(y_end + 1, x_end - 1) and board[y_end + 1][x_end - 1] == " "
+        bottom_left = is_within_bounds(y_end - length, x_end + length) and board[y_end - length][x_end + length] == " "
+        if top_right and bottom_left:
+            return "OPEN"
+        elif top_right or bottom_left:
+            return "SEMIOPEN"
+        else:
+            return "CLOSED"
+
+    #lr diagonal \
+    elif (d_y, d_x) == (1, 1):
+        bottom_right = is_within_bounds(y_end + 1, x_end + 1) and board[y_end + 1][x_end + 1] == " "
+        top_left = is_within_bounds(y_end - length, x_end - length) and board[y_end - length][x_end - length] == " "
+        if bottom_right and top_left:
+            return "OPEN"
+        elif bottom_right or top_left:
+            return "SEMIOPEN"
+        else:
+            return "CLOSED"
 
     
+
 def detect_row(board, col, y_start, x_start, length, d_y, d_x):
-    return open_seq_count, semi_open_seq_count
+    open_seq_count = 0
+    semi_open_seq_count = 0
+    y, x = y_start, x_start
+
+    #go along direction
+    while 0 <= y < len(board) and 0 <= x < len(board[0]):
+        #extend sequence
+        seq_len = 0
+        while (0 <= y < len(board) and 0 <= x < len(board[0]) and 
+               board[y][x] == col):
+            seq_len += 1
+            y += d_y
+            x += d_x
+            
+        if seq_len == length:
+            y_end = y - d_y
+            x_end = x - d_x
+            
+            if is_bounded(board, y_end, x_end, length, d_y, d_x) == "OPEN":
+                open_seq_count += 1
+            elif is_bounded(board, y_end, x_end, length, d_y, d_x) == "SEMIOPEN":
+                semi_open_seq_count += 1
+
+        #goto next cell of colour col
+        while (0 <= y < len(board) and 0 <= x < len(board[0]) and 
+               board[y][x] != col):
+            y += d_y
+            x += d_x
+            
+    return (open_seq_count, semi_open_seq_count)
+
     
 def detect_rows(board, col, length):
-    ####CHANGE ME
-    open_seq_count, semi_open_seq_count = 0, 0
-    return open_seq_count, semi_open_seq_count
+    open_count = 0
+    semi_open_count = 0
+    rows = len(board)
+    cols = len(board[0])
+
+    #horizontal
+    for y in range(rows):
+        open_seq, semi_open_seq = detect_row(board, col, y, 0, length, 0,1)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+    #vertical
+    for x in range(cols):
+        open_seq, semi_open_seq = detect_row(board, col, 0, x, length, 1,0)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+    # For leftright (1, 1)
+    for y in range(rows):
+        open_seq, semi_open_seq = detect_row(board, col, y, 0, length, 1, 1)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+    for x in range(1, cols):  # Start from column 1 to avoid double-counting the top-left diagonal
+        open_seq, semi_open_seq = detect_row(board, col, 0, x, length, 1, 1)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+    # For rightleft (1, -1)
+    for y in range(rows):
+        open_seq, semi_open_seq = detect_row(board, col, y, cols - 1, length, 1, -1)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+    for x in range(cols - 2, -1, -1):  # Start from cols-2 to avoid double-counting the top-right diagonal
+        open_seq, semi_open_seq = detect_row(board, col, 0, x, length, 1, -1)
+        open_count += open_seq
+        semi_open_count += semi_open_seq
+
+
+    return open_count, semi_open_count
+
     
 def search_max(board):
-    return move_y, move_x
+    (move_y,move_x) = (0,0)
+    highest_score = 0
+    for y in range(len(board)):
+        for x in range(len(board[y])):
+            if board[y][x] == " ":
+                board[y][x] = "b"
+                if score(board) > highest_score:
+                    highest_score = score(board)
+                    (move_y,move_x) = (y,x)
+                board[y][x] = " "
+    return (move_y, move_x)
     
 def score(board):
     MAX_SCORE = 100000
@@ -71,7 +175,62 @@ def score(board):
 
     
 def is_win(board):
-    pass
+    for r in range(len(board)):
+        for c in range(len(board[r])-4):
+            #horizontal win
+            if board[r][c] == "b" and board[r][c+1] == "b" and board[r][c+2] == "b" and board[r][c+3] == "b" and board[r][c+4] == "b":
+                if (c > 0 and board[r][c-1] == "b") or (c + 5 < len(board[r]) and board[r][c+5] == "b"):
+                    continue
+                return "Black won"
+            elif board[r][c] == "w" and board[r][c+1] == "w" and board[r][c+2] == "w" and board[r][c+3] == "w" and board[r][c+4] == "w":
+                if (c > 0 and board[r][c-1] == "w") or (c + 5 < len(board[r]) and board[r][c+5] == "w"):
+                    continue
+                return "White won"
+                    
+    for r in range(len(board)-4):
+        for c in range(len(board[r])):
+            #vertical win
+            if board[r][c] == "b" and board[r+1][c] == "b" and board[r+2][c] == "b" and board[r+3][c] == "b" and board[r+4][c] == "b":
+                if (r > 0 and board[r-1][c] == "b") or (r + 5 < len(board) and board[r+5][c] == "b"):
+                    continue
+                return "Black won"
+            elif board[r][c] == "w" and board[r+1][c] == "w" and board[r+2][c] == "w" and board[r+3][c] == "w" and board[r+4][c] == "w":
+                if (r > 0 and board[r-1][c] == "w") or (r + 5 < len(board) and board[r+5][c] == "w"):
+                    continue
+                return "White won"
+            
+    # Check diagonal "\" wins
+    for r in range(len(board) - 4):
+        for c in range(len(board[r]) - 4):
+            if board[r][c] == "b" and board[r+1][c+1] == "b" and board[r+2][c+2] == "b" and board[r+3][c+3] == "b" and board[r+4][c+4] == "b":
+                if (r > 0 and c > 0 and board[r-1][c-1] == "b") or (r + 5 < len(board) and c + 5 < len(board[r]) and board[r+5][c+5] == "b"):
+                    continue
+                return "Black won"
+            elif board[r][c] == "w" and board[r+1][c+1] == "w" and board[r+2][c+2] == "w" and board[r+3][c+3] == "w" and board[r+4][c+4] == "w":
+                if (r > 0 and c > 0 and board[r-1][c-1] == "w") or (r + 5 < len(board) and c + 5 < len(board[r]) and board[r+5][c+5] == "w"):
+                    continue
+                return "White won"
+
+    # Check diagonal "/" wins
+    for r in range(4, len(board)):
+        for c in range(len(board[r]) - 4):
+            if board[r][c] == "b" and board[r-1][c+1] == "b" and board[r-2][c+2] == "b" and board[r-3][c+3] == "b" and board[r-4][c+4] == "b":
+                if (r < len(board) - 1 and c > 0 and board[r+1][c-1] == "b") or (r - 5 >= 0 and c + 5 < len(board[r]) and board[r-5][c+5] == "b"):
+                    continue
+                return "Black won"
+            elif board[r][c] == "w" and board[r-1][c+1] == "w" and board[r-2][c+2] == "w" and board[r-3][c+3] == "w" and board[r-4][c+4] == "w":
+                if (r < len(board) - 1 and c > 0 and board[r+1][c-1] == "w") or (r - 5 >= 0 and c + 5 < len(board[r]) and board[r-5][c+5] == "w"):
+                    continue
+                return "White won"            
+    #check if full
+    fullornot = True
+    for row in board:
+        if " " in row:
+            fullornot = False
+            break
+    if fullornot:
+        return "Draw"
+    return "Continue playing"         
 
 
 def print_board(board):
@@ -340,6 +499,7 @@ def some_tests():
 
   
             
-if __name__ == '__main__':
-    play_gomoku(8)
+#if __name__ == '__main__':
+#    play_gomoku(8)
     
+easy_testset_for_main_functions()
